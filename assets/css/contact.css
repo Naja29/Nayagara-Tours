@@ -1,0 +1,103 @@
+.contact-section { }
+
+/* Grid */
+.contact-grid {
+    display: grid;
+    grid-template-columns: 1fr 1.4fr;
+    gap: 55px;
+    margin-bottom: 55px;
+    align-items: start;
+}
+
+/* Info Side */
+.contact-info {
+    display: flex;
+    flex-direction: column;
+    gap: 26px;
+}
+
+.contact-info-item {
+    display: flex;
+    gap: 18px;
+    align-items: flex-start;
+}
+
+.contact-icon {
+    width: 50px;
+    height: 50px;
+    background: var(--primary);
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--white);
+    font-size: 1.05rem;
+    flex-shrink: 0;
+    box-shadow: 0 4px 14px rgba(0,119,182,0.3);
+}
+
+.contact-info-item h4 {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--dark);
+    margin-bottom: 5px;
+}
+
+.contact-info-item p {
+    font-size: 0.9rem;
+    color: var(--text-light);
+    line-height: 1.65;
+}
+
+/* Social Icons */
+.contact-social {
+    display: flex;
+    gap: 10px;
+    margin-top: 6px;
+    flex-wrap: wrap;
+}
+
+.social-link {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+    color: white;
+    transition: var(--ease);
+}
+
+.social-link:hover { transform: translateY(-3px) scale(1.1); }
+
+.social-link.facebook  { background: #1877F2; }
+.social-link.instagram { background: linear-gradient(45deg,#F09433,#E6683C,#DC2743,#CC2366,#BC1888); }
+.social-link.twitter   { background: #1DA1F2; }
+.social-link.youtube   { background: #FF0000; }
+.social-link.whatsapp  { background: #25D366; }
+
+/* Form Side */
+.contact-form-wrap {
+    background: var(--white);
+    border-radius: var(--radius-md);
+    padding: 40px 38px;
+    box-shadow: var(--shadow-md);
+    border: 1px solid var(--border);
+}
+
+.contact-form button {
+    margin-top: 8px;
+}
+
+/* Map */
+.contact-map {
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    box-shadow: var(--shadow-md);
+    border: 1px solid var(--border);
+}
+
+.contact-map iframe {
+    display: block;
+}
