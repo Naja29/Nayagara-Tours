@@ -77,7 +77,34 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Destinations Slider 
+    // Reviews Slider
+    if (document.querySelector('.reviews-swiper')) {
+        new Swiper('.reviews-swiper', {
+            loop:          true,
+            speed:         700,
+            spaceBetween:  28,
+            slidesPerView: 1,
+            autoplay: {
+                delay:                5500,
+                disableOnInteraction: false,
+                pauseOnMouseEnter:    true,
+            },
+            pagination: {
+                el:        '.reviews-pagination',
+                clickable: true,
+            },
+            navigation: {
+                nextEl: '.reviews-next',
+                prevEl: '.reviews-prev',
+            },
+            breakpoints: {
+                640:  { slidesPerView: 2, spaceBetween: 22 },
+                1024: { slidesPerView: 3, spaceBetween: 28 },
+            },
+        });
+    }
+
+    // Destinations Slider
     if (document.querySelector('.destinations-swiper')) {
         new Swiper('.destinations-swiper', {
             loop:          true,

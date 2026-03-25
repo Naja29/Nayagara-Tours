@@ -65,6 +65,7 @@
             <li><a href="${homeLink('#packages', 'pages/packages.html')}"            class="nav-link" data-page="packages">Packages</a></li>
             <li><a href="${homeLink('#gallery', 'pages/gallery.html')}"               class="nav-link" data-page="gallery">Gallery</a></li>
             <li><a href="${homeLink('#destinations', 'pages/blog.html')}"            class="nav-link" data-page="blog">Blog</a></li>
+            <li><a href="${homeLink('#reviews',  'index.html#reviews')}"              class="nav-link" data-page="reviews">Reviews</a></li>
             <li><a href="${homeLink('#contact',  'index.html#contact')}"             class="nav-link" data-page="contact">Contact</a></li>
         </ul>
 
@@ -191,11 +192,13 @@
         });
     }
 
-    // On inner pages the navbar is always solid 
+    // On inner pages without a page-hero, make navbar solid immediately
     function solidifyNavOnInnerPages() {
         const nav  = document.getElementById('navbar');
-        const path = window.location.pathname;
         if (!nav) return;
+        // If the page has a page-hero, let it stay transparent (like homepage)
+        if (document.querySelector('.page-hero')) return;
+        const path = window.location.pathname;
         if (!path.endsWith('index.html') && !path.endsWith('/') && path !== '') {
             nav.classList.add('solid');
         }
