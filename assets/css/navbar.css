@@ -60,10 +60,7 @@
 
 .topbar-socials a:hover { color: var(--secondary); }
 
-/* ===========================
-   NAVBAR
-   =========================== */
-
+/* NAVBAR */
 .navbar {
     position: fixed;
     top: var(--topbar-height);
@@ -102,7 +99,7 @@
     gap: 24px;
 }
 
-/* ── Logo ── */
+/* Logo */
 .nav-logo {
     display: flex;
     align-items: center;
@@ -131,6 +128,12 @@
     transform: rotate(20deg);
 }
 
+.nav-logo .logo-img {
+    height: 42px;
+    max-width: 160px;
+    object-fit: contain;
+}
+
 .logo-text {
     display: flex;
     flex-direction: column;
@@ -153,7 +156,7 @@
     text-transform: uppercase;
 }
 
-/* ── Nav Menu ── */
+/* Nav Menu */
 .nav-menu {
     display: flex;
     align-items: center;
@@ -194,7 +197,7 @@
     width: calc(100% - 28px);
 }
 
-/* ── Nav Actions ── */
+/* Nav Actions */
 .nav-actions {
     display: flex;
     align-items: center;
@@ -207,7 +210,7 @@
     font-size: 0.875rem;
 }
 
-/* ── Hamburger ── */
+/* Hamburger */
 .hamburger {
     display: none;
     flex-direction: column;

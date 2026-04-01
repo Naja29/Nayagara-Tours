@@ -1,10 +1,18 @@
 <?php
-define('DB_HOST', 'localhost');
-define('DB_PORT', '3307');        // Change to 3306 on cPanel hosting
-define('DB_NAME', 'nayagara_tours');
-define('DB_USER', 'root');        // Change to your cPanel DB username
-define('DB_PASS', '');            // Change to your cPanel DB password
+// ── Database ──────────────────────────────────────────────────────────────────
+define('DB_HOST',    'localhost');
+define('DB_PORT',    '3307');       // Change to 3306 on cPanel hosting
+define('DB_NAME',    'nayagara_tours');
+define('DB_USER',    'root');       // Change to your cPanel DB username
+define('DB_PASS',    '');           // Change to your cPanel DB password
 define('DB_CHARSET', 'utf8mb4');
+
+// ── Site URLs — change SITE_BASE when deploying ───────────────────────────────
+// Local:  '/nayagara-tours'
+// cPanel: ''   (empty string — site is at domain root)
+define('SITE_BASE',  '/nayagara-tours');
+define('SITE_URL',   SITE_BASE);
+define('ADMIN_URL',  SITE_BASE . '/admin');
 
 function getPDO(): PDO {
     static $pdo = null;

@@ -1,0 +1,27 @@
+User-agent: *
+
+# Block admin area
+Disallow: /nayagara-tours/admin/
+
+# Block form handlers
+Disallow: /nayagara-tours/submit-booking.php
+Disallow: /nayagara-tours/submit-inquiry.php
+
+# Block config and internal includes
+Disallow: /nayagara-tours/assets/php/
+Disallow: /nayagara-tours/database/
+
+# Block uploaded files from indexing
+Disallow: /nayagara-tours/uploads/
+
+# Block maintenance page
+Disallow: /nayagara-tours/maintenance.php
+
+# Allow all public pages and assets
+Allow: /nayagara-tours/pages/
+Allow: /nayagara-tours/assets/css/
+Allow: /nayagara-tours/assets/js/
+Allow: /nayagara-tours/assets/images/
+
+# Sitemap (create this when you go live)
+# Sitemap: https://www.yourdomain.com/sitemap.xml

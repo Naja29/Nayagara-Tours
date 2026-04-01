@@ -4,7 +4,7 @@
     padding-top: 70px;
 }
 
-/* ── Main Grid ── */
+/* Main Grid  */
 .footer-grid {
     display: grid;
     grid-template-columns: 1.6fr 1fr 1fr 1.2fr;
@@ -13,7 +13,7 @@
     border-bottom: 1px solid rgba(255,255,255,0.08);
 }
 
-/* ── Footer Brand ── */
+/* Footer Brand */
 .footer-brand { }
 
 .footer-logo {
@@ -74,7 +74,7 @@
     transform: translateY(-3px);
 }
 
-/* ── Footer Column ── */
+/* Footer Column */
 .footer-col h4 {
     font-size: 1rem;
     font-weight: 700;
@@ -110,7 +110,7 @@
     padding-left: 4px;
 }
 
-/* ── Contact Items ── */
+/* Contact Items */
 .footer-contact-item {
     display: flex;
     gap: 12px;
@@ -131,7 +131,7 @@
     line-height: 1.6;
 }
 
-/* ── Bottom Bar ── */
+/* Bottom Bar */
 .footer-bottom {
     padding: 20px 0;
     display: flex;

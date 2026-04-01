@@ -2,12 +2,21 @@
 $currentPage = basename($_SERVER['PHP_SELF']);
 $currentDir  = basename(dirname($_SERVER['PHP_SELF']));
 
-function navItem(string $href, string $icon, string $label, string $dir): string {
+// Notification counts
+$_pdo = getPDO();
+$newBookings  = (int)$_pdo->query("SELECT COUNT(*) FROM bookings  WHERE status  = 'new'")->fetchColumn();
+$unreadInq    = (int)$_pdo->query("SELECT COUNT(*) FROM inquiries WHERE is_read  = 0")->fetchColumn();
+$pendingRev   = (int)$_pdo->query("SELECT COUNT(*) FROM reviews   WHERE is_approved = 0")->fetchColumn();
+
+function navItem(string $href, string $icon, string $label, string $dir, int $badge = 0): string {
     global $currentDir;
-    $active = ($currentDir === $dir) ? 'active' : '';
+    $active     = ($currentDir === $dir) ? 'active' : '';
+    $badgeHtml  = $badge > 0
+        ? '<span class="badge bg-danger ms-auto" style="font-size:.65rem;">' . $badge . '</span>'
+        : '';
     return '<li class="nav-item">
-        <a class="nav-link ' . $active . '" href="' . $href . '">
-            <i class="bi ' . $icon . ' me-2"></i>' . $label . '
+        <a class="nav-link ' . $active . '" href="' . $href . '" style="display:flex;align-items:center;">
+            <i class="bi ' . $icon . ' me-2"></i>' . $label . $badgeHtml . '
         </a>
     </li>';
 }
@@ -23,17 +32,19 @@ function navItem(string $href, string $icon, string $label, string $dir): string
         <i class="bi bi-speedometer2 me-2"></i>Dashboard
       </a>
     </li>
-    <?= navItem(ADMIN_URL . '/packages/index.php',  'bi-suitcase-lg',   'Packages',   'packages') ?>
-    <?= navItem(ADMIN_URL . '/bookings/index.php',  'bi-calendar-check','Bookings',   'bookings') ?>
-    <?= navItem(ADMIN_URL . '/inquiries/index.php', 'bi-envelope',      'Inquiries',  'inquiries') ?>
-    <?= navItem(ADMIN_URL . '/gallery/index.php',   'bi-images',        'Gallery',    'gallery') ?>
-    <?= navItem(ADMIN_URL . '/blog/index.php',      'bi-file-earmark-text', 'Blog',   'blog') ?>
-    <?= navItem(ADMIN_URL . '/reviews/index.php',   'bi-star',          'Reviews',    'reviews') ?>
-    <?= navItem(ADMIN_URL . '/banners/index.php',   'bi-image',         'Banners',    'banners') ?>
+    <?= navItem(ADMIN_URL . '/packages/index.php',  'bi-suitcase-lg',       'Packages',  'packages') ?>
+    <?= navItem(ADMIN_URL . '/services/index.php',  'bi-grid-3x2-gap',     'Services',  'services') ?>
+    <?= navItem(ADMIN_URL . '/banners/index.php',   'bi-image',            'Banners',   'banners') ?>
+    <?= navItem(ADMIN_URL . '/gallery/index.php',   'bi-images',           'Gallery',   'gallery') ?>
+    <?= navItem(ADMIN_URL . '/blog/index.php',      'bi-file-earmark-text','Blog',      'blog') ?>
+    <?= navItem(ADMIN_URL . '/reviews/index.php',   'bi-star',             'Reviews',   'reviews',   $pendingRev) ?>
+    <?= navItem(ADMIN_URL . '/bookings/index.php',  'bi-calendar-check',   'Bookings',  'bookings',  $newBookings) ?>
+    <?= navItem(ADMIN_URL . '/inquiries/index.php', 'bi-envelope',         'Inquiries', 'inquiries', $unreadInq) ?>
+    <?= navItem(ADMIN_URL . '/settings/index.php',  'bi-gear',             'Settings',  'settings') ?>
   </ul>
 
   <div class="sidebar-footer">
-    <a href="<?= ADMIN_URL ?>/../index.html" target="_blank" class="btn btn-sm btn-outline-secondary w-100">
+    <a href="<?= ADMIN_URL ?>/../index.php" target="_blank" class="btn btn-sm btn-outline-secondary w-100">
       <i class="bi bi-globe me-1"></i> View Website
     </a>
   </div>

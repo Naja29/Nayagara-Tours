@@ -9,7 +9,7 @@
     gap: 28px;
 }
 
-/* ── Card ── */
+/* Card  */
 .service-card {
     background: var(--white);
     border-radius: var(--radius-lg);
@@ -67,7 +67,7 @@
     color: rgba(0,119,182,0.07);
 }
 
-/* ── Icon ── */
+/* Icon */
 .service-icon {
     width: 76px;
     height: 76px;
@@ -89,7 +89,7 @@
     box-shadow: 0 12px 32px rgba(0,119,182,0.40);
 }
 
-/* ── Content ── */
+/* Content */
 .service-card h3 {
     font-family: var(--font-heading);
     font-size: 1.2rem;

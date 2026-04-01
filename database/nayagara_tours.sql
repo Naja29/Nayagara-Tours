@@ -1,44 +1,78 @@
 -- Nayagara Tours - Database Schema
 -- Database: nayagara_tours
 
-
 CREATE DATABASE IF NOT EXISTS nayagara_tours
   CHARACTER SET utf8mb4
   COLLATE utf8mb4_unicode_ci;
 
 USE nayagara_tours;
 
+
 -- 1. Admin Users
 CREATE TABLE IF NOT EXISTS admin_users (
   id          INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   name        VARCHAR(100)  NOT NULL,
+  username    VARCHAR(50)   NOT NULL UNIQUE,
   email       VARCHAR(150)  NOT NULL UNIQUE,
-  password    VARCHAR(255)  NOT NULL,          -- bcrypt hash
-  role        ENUM('super_admin', 'admin') NOT NULL DEFAULT 'admin',
+  password    VARCHAR(255)  NOT NULL,
+  role        ENUM('super_admin','admin') NOT NULL DEFAULT 'admin',
   created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;
 
--- Default admin (password: Admin@1234 — change after first login)
-INSERT INTO admin_users (name, email, password, role) VALUES
-('Super Admin', 'admin@nayagaratours.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'super_admin');
+-- Default admin (username: admin / password: Admin@1234 — change after first login)
+INSERT INTO admin_users (name, username, email, password, role) VALUES
+('Super Admin', 'admin', 'admin@nayagaratours.com',
+ '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'super_admin');
 
 
--- 2. Tour Packages
+
+-- 2. Site Settings (key / value store)
+CREATE TABLE IF NOT EXISTS settings (
+  `key`       VARCHAR(100) NOT NULL PRIMARY KEY,
+  `value`     TEXT         DEFAULT NULL,
+  updated_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+
+INSERT INTO settings (`key`, `value`) VALUES
+('site_name',          'Nayagara Tours'),
+('site_tagline',       'Sri Lanka Travel'),
+('site_logo',          ''),
+('contact_phone',      ''),
+('contact_email',      ''),
+('contact_whatsapp',   ''),
+('contact_address',    ''),
+('social_facebook',    ''),
+('social_instagram',   ''),
+('social_twitter',     ''),
+('social_youtube',     ''),
+('social_tripadvisor', ''),
+('google_maps_embed',  ''),
+('meta_description',   'Nayagara Tours Sri Lanka - handcrafted tour packages for every traveller.');
+
+
+
+-- 3. Tour Packages
 CREATE TABLE IF NOT EXISTS packages (
   id            INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   title         VARCHAR(200)  NOT NULL,
   slug          VARCHAR(220)  NOT NULL UNIQUE,
-  category      ENUM('cultural', 'beach', 'wildlife', 'hill', 'honeymoon', 'adventure') NOT NULL,
-  duration      VARCHAR(50)   NOT NULL,          -- e.g. "5 Days / 4 Nights"
+  category      ENUM('cultural','beach','wildlife','hill','honeymoon','adventure') NOT NULL,
+  badge         ENUM('popular','bestseller','new','limited','hotdeal') DEFAULT NULL,
+  duration      VARCHAR(50)   NOT NULL,
   price         DECIMAL(10,2) NOT NULL,
-  old_price     DECIMAL(10,2) DEFAULT NULL,       -- for showing discount
-  group_size    VARCHAR(50)   DEFAULT NULL,        -- e.g. "2–15 People"
+  old_price     DECIMAL(10,2) DEFAULT NULL,
+  group_size    VARCHAR(50)   DEFAULT NULL,
+  difficulty    ENUM('easy','moderate','challenging') DEFAULT 'moderate',
+  best_season   VARCHAR(100)  DEFAULT NULL,
+  rating        DECIMAL(2,1)  DEFAULT NULL,
+  review_count  SMALLINT UNSIGNED DEFAULT 0,
   description   TEXT          NOT NULL,
-  highlights    TEXT          DEFAULT NULL,        -- JSON array or newline-separated
-  itinerary     LONGTEXT      DEFAULT NULL,        -- JSON or HTML
+  highlights    TEXT          DEFAULT NULL,
+  itinerary     LONGTEXT      DEFAULT NULL,
   inclusions    TEXT          DEFAULT NULL,
   exclusions    TEXT          DEFAULT NULL,
-  cover_image   VARCHAR(300)  DEFAULT NULL,        -- file path
+  destinations  TEXT          DEFAULT NULL,
+  cover_image   VARCHAR(300)  DEFAULT NULL,
   is_featured   TINYINT(1)    NOT NULL DEFAULT 0,
   is_active     TINYINT(1)    NOT NULL DEFAULT 1,
   created_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -46,85 +80,24 @@ CREATE TABLE IF NOT EXISTS packages (
 ) ENGINE=InnoDB;
 
 
--- 3. Bookings (Custom Tour Requests)
-CREATE TABLE IF NOT EXISTS bookings (
-  id              INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-  package_id      INT UNSIGNED DEFAULT NULL,       -- NULL = custom tour
-  full_name       VARCHAR(150) NOT NULL,
-  email           VARCHAR(150) NOT NULL,
-  phone           VARCHAR(30)  DEFAULT NULL,
-  nationality     VARCHAR(100) DEFAULT NULL,
-  adults          TINYINT UNSIGNED DEFAULT 1,
-  children        TINYINT UNSIGNED DEFAULT 0,
-  travel_date     DATE         DEFAULT NULL,
-  duration        VARCHAR(100) DEFAULT NULL,
-  special_request TEXT         DEFAULT NULL,
-  status          ENUM('new', 'contacted', 'confirmed', 'cancelled') NOT NULL DEFAULT 'new',
-  admin_notes     TEXT         DEFAULT NULL,
-  created_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  FOREIGN KEY (package_id) REFERENCES packages(id) ON DELETE SET NULL
-) ENGINE=InnoDB;
 
-
--- 4. Contact Inquiries
-CREATE TABLE IF NOT EXISTS inquiries (
+-- 4. Services
+CREATE TABLE IF NOT EXISTS services (
   id          INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-  full_name   VARCHAR(150) NOT NULL,
-  email       VARCHAR(150) NOT NULL,
-  phone       VARCHAR(30)  DEFAULT NULL,
-  subject     VARCHAR(250) DEFAULT NULL,
-  message     TEXT         NOT NULL,
-  is_read     TINYINT(1)   NOT NULL DEFAULT 0,
-  created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB;
-
-
--- 5. Gallery
-CREATE TABLE IF NOT EXISTS gallery (
-  id          INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-  title       VARCHAR(200) DEFAULT NULL,
-  category    VARCHAR(100) DEFAULT NULL,          -- e.g. 'beaches', 'wildlife'
-  image_path  VARCHAR(300) NOT NULL,
+  type        ENUM('core','additional') NOT NULL DEFAULT 'core',
+  icon_class  VARCHAR(100) NOT NULL DEFAULT 'fa-star',
+  title       VARCHAR(200) NOT NULL,
+  description TEXT         DEFAULT NULL,
+  features    TEXT         DEFAULT NULL,   -- newline-separated for core services
   sort_order  SMALLINT UNSIGNED DEFAULT 0,
   is_active   TINYINT(1)   NOT NULL DEFAULT 1,
-  created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;
 
 
--- 6. Blog Posts
-CREATE TABLE IF NOT EXISTS blog_posts (
-  id            INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-  title         VARCHAR(250) NOT NULL,
-  slug          VARCHAR(270) NOT NULL UNIQUE,
-  excerpt       TEXT         DEFAULT NULL,
-  content       LONGTEXT     NOT NULL,
-  cover_image   VARCHAR(300) DEFAULT NULL,
-  category      VARCHAR(100) DEFAULT NULL,
-  tags          VARCHAR(300) DEFAULT NULL,         -- comma-separated
-  author_id     INT UNSIGNED NOT NULL,
-  is_published  TINYINT(1)   NOT NULL DEFAULT 0,
-  published_at  TIMESTAMP    DEFAULT NULL,
-  created_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  FOREIGN KEY (author_id) REFERENCES admin_users(id) ON DELETE CASCADE
-) ENGINE=InnoDB;
 
-
--- 7. Reviews / Testimonials
-CREATE TABLE IF NOT EXISTS reviews (
-  id          INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-  name        VARCHAR(150) NOT NULL,
-  country     VARCHAR(100) DEFAULT NULL,
-  rating      TINYINT UNSIGNED NOT NULL DEFAULT 5,  -- 1–5
-  review_text TEXT         NOT NULL,
-  avatar      VARCHAR(300) DEFAULT NULL,
-  is_approved TINYINT(1)   NOT NULL DEFAULT 0,
-  created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB;
-
-
--- 8. Hero Banners (manage slider from admin)
+-- 5. Hero Banners
 CREATE TABLE IF NOT EXISTS hero_banners (
   id          INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   heading     VARCHAR(250) NOT NULL,
@@ -134,5 +107,103 @@ CREATE TABLE IF NOT EXISTS hero_banners (
   btn_link    VARCHAR(300) DEFAULT '#packages',
   sort_order  SMALLINT UNSIGNED DEFAULT 0,
   is_active   TINYINT(1)  NOT NULL DEFAULT 1,
+  created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+
+
+
+-- 6. Gallery Images
+CREATE TABLE IF NOT EXISTS gallery (
+  id          INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  title       VARCHAR(200) DEFAULT NULL,
+  category    VARCHAR(100) DEFAULT NULL,
+  image_path  VARCHAR(300) NOT NULL,
+  sort_order  SMALLINT UNSIGNED DEFAULT 0,
+  is_active   TINYINT(1)   NOT NULL DEFAULT 1,
+  created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+
+
+
+-- 7. Gallery Videos
+CREATE TABLE IF NOT EXISTS gallery_videos (
+  id          INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  title       VARCHAR(250) NOT NULL,
+  description TEXT         DEFAULT NULL,
+  video_type  ENUM('youtube','upload') NOT NULL DEFAULT 'youtube',
+  youtube_url VARCHAR(500) DEFAULT NULL,   -- original URL the admin pasted
+  embed_url   VARCHAR(500) DEFAULT NULL,   -- converted /embed/ URL for iframe
+  video_file  VARCHAR(500) DEFAULT NULL,   -- path to uploaded video file
+  sort_order  SMALLINT UNSIGNED DEFAULT 0,
+  is_active   TINYINT(1)   NOT NULL DEFAULT 1,
+  created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+
+
+
+-- 8. Blog Posts
+CREATE TABLE IF NOT EXISTS blog_posts (
+  id            INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  title         VARCHAR(250) NOT NULL,
+  slug          VARCHAR(270) NOT NULL UNIQUE,
+  excerpt       TEXT         DEFAULT NULL,
+  content       LONGTEXT     NOT NULL,
+  cover_image   VARCHAR(300) DEFAULT NULL,
+  category      VARCHAR(100) DEFAULT NULL,
+  tags          VARCHAR(300) DEFAULT NULL,
+  author        VARCHAR(150) DEFAULT NULL,
+  is_published  TINYINT(1)   NOT NULL DEFAULT 0,
+  published_at  DATETIME     DEFAULT NULL,
+  created_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+
+
+
+-- 9. Reviews / Testimonials
+CREATE TABLE IF NOT EXISTS reviews (
+  id          INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  name        VARCHAR(150) NOT NULL,
+  country     VARCHAR(100) DEFAULT NULL,
+  rating      TINYINT UNSIGNED NOT NULL DEFAULT 5,
+  review_text TEXT         NOT NULL,
+  avatar      VARCHAR(300) DEFAULT NULL,
+  is_approved TINYINT(1)   NOT NULL DEFAULT 0,
+  created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+
+
+
+-- 10. Bookings
+CREATE TABLE IF NOT EXISTS bookings (
+  id              INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  package_id      INT UNSIGNED DEFAULT NULL,
+  full_name       VARCHAR(150) NOT NULL,
+  email           VARCHAR(150) NOT NULL,
+  phone           VARCHAR(30)  DEFAULT NULL,
+  nationality     VARCHAR(100) DEFAULT NULL,
+  adults          TINYINT UNSIGNED DEFAULT 1,
+  children        TINYINT UNSIGNED DEFAULT 0,
+  travel_date     DATE         DEFAULT NULL,
+  special_request TEXT         DEFAULT NULL,
+  status          ENUM('new','contacted','confirmed','cancelled') NOT NULL DEFAULT 'new',
+  admin_notes     TEXT         DEFAULT NULL,
+  created_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (package_id) REFERENCES packages(id) ON DELETE SET NULL
+) ENGINE=InnoDB;
+
+
+
+-- 11. Contact Inquiries
+CREATE TABLE IF NOT EXISTS inquiries (
+  id          INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  full_name   VARCHAR(150) NOT NULL,
+  email       VARCHAR(150) NOT NULL,
+  phone       VARCHAR(30)  DEFAULT NULL,
+  subject     VARCHAR(250) DEFAULT NULL,
+  message     TEXT         NOT NULL,
+  is_read     TINYINT(1)   NOT NULL DEFAULT 0,
   created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;

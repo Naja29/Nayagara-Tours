@@ -256,6 +256,21 @@ body {
   margin: 0 auto 1.25rem;
 }
 
+/* ACTION BUTTONS — compact row */
+.tbl-actions {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  flex-wrap: nowrap;
+}
+
+.tbl-actions .btn {
+  padding: 3px 7px;
+  font-size: .75rem;
+  line-height: 1.4;
+  border-radius: 5px;
+}
+
 /* RESPONSIVE */
 @media (max-width: 768px) {
   .admin-sidebar { width: 0; overflow: hidden; }

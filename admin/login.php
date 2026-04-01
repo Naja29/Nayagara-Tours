@@ -2,17 +2,15 @@
 session_start();
 require_once __DIR__ . '/config/db.php';
 
-define('ADMIN_URL', '/nayagara-tours/admin');
-define('SITE_URL',  '/nayagara-tours');
 
 if (!empty($_SESSION['admin_id'])) {
     header('Location: ' . ADMIN_URL . '/index.php');
     exit;
 }
 
-$logoPath = __DIR__ . '/assets/images/logo.png';
-$logoUrl  = ADMIN_URL . '/assets/images/logo.png';
-$hasLogo  = file_exists($logoPath);
+$pdo     = getPDO();
+$logoUrl = $pdo->query("SELECT `value` FROM settings WHERE `key` = 'site_logo' LIMIT 1")->fetchColumn();
+$hasLogo = !empty($logoUrl);
 
 $error = '';
 
@@ -23,8 +21,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($username === '' || $password === '') {
         $error = 'Please enter your username and password.';
     } else {
-        $pdo = getPDO();
-
         // Check if username column exists; if not, redirect to setup
         $cols = $pdo->query("SHOW COLUMNS FROM admin_users LIKE 'username'")->fetchAll();
         if (empty($cols)) {
@@ -49,24 +45,49 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-// Slider slides
-$slides = [
-    [
-        'image'    => SITE_URL . '/assets/images/hero/slide-1.jpg',
-        'heading'  => 'Discover Sri Lanka',
-        'subtext'  => 'Pristine beaches, ancient temples & lush highlands',
-    ],
-    [
-        'image'    => SITE_URL . '/assets/images/hero/slide-2.jpg',
-        'heading'  => 'Unforgettable Journeys',
-        'subtext'  => 'Tailor-made tours crafted just for your adventure',
-    ],
-    [
-        'image'    => SITE_URL . '/assets/images/hero/slide-3.jpg',
-        'heading'  => 'Manage With Ease',
-        'subtext'  => 'Your powerful dashboard for Nayagara Tours',
-    ],
-];
+// Slider slides — pulled from hero_banners table
+$slidesRaw = $pdo->query(
+    "SELECT heading, subheading, image_path FROM hero_banners WHERE is_active = 1 ORDER BY sort_order ASC, id ASC"
+)->fetchAll();
+
+$slides = [];
+foreach ($slidesRaw as $row) {
+    $slides[] = [
+        'image'   => SITE_URL . '/' . ltrim($row['image_path'], '/'),
+        'heading' => $row['heading'],
+        'subtext' => $row['subheading'] ?? '',
+    ];
+}
+
+// Fallback if no banners in DB
+if (empty($slides)) {
+    $slides = [
+        [
+            'image'   => SITE_URL . '/assets/images/hero/slide-1.jpg',
+            'heading' => 'Discover Sri Lanka',
+            'subtext' => 'Pristine beaches, ancient temples & lush highlands',
+        ],
+        [
+            'image'   => SITE_URL . '/assets/images/hero/slide-2.jpg',
+            'heading' => 'Unforgettable Journeys',
+            'subtext' => 'Tailor-made tours crafted just for your adventure',
+        ],
+        [
+            'image'   => SITE_URL . '/assets/images/hero/slide-3.jpg',
+            'heading' => 'Manage With Ease',
+            'subtext' => 'Your powerful dashboard for Nayagara Tours',
+        ],
+    ];
+}
+
+// Dynamic animation timing based on actual slide count
+$n        = max(1, count($slides));
+$slotSec  = 6;
+$totalSec = $n * $slotSec;
+$fi       = max(3, round(90  / $totalSec)); // fade-in done %
+$fi2      = max(5, round(144 / $totalSec)); // text fade-in done %
+$ve       = round(($slotSec - 1) * 100 / $totalSec); // visible-end %
+$hp       = round($slotSec * 100 / $totalSec);        // hidden-start %
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -86,7 +107,7 @@ $slides = [
       overflow: hidden;
     }
 
-    /* LEFT — SLIDER PANEL*/
+    /* LEFT, SLIDER PANEL*/
     .login-left {
       flex: 1;
       position: relative;
@@ -98,21 +119,17 @@ $slides = [
       position: absolute;
       inset: 0;
       opacity: 0;
-      animation: slideShow 18s infinite;
+      animation: slideShow <?= $totalSec ?>s infinite;
       background-size: cover;
       background-position: center;
     }
 
-    .slide:nth-child(1) { animation-delay: 0s; }
-    .slide:nth-child(2) { animation-delay: 6s; }
-    .slide:nth-child(3) { animation-delay: 12s; }
-
     @keyframes slideShow {
-      0%   { opacity: 0;   transform: scale(1.08); }
-      5%   { opacity: 1;   transform: scale(1.05); }
-      28%  { opacity: 1;   transform: scale(1); }
-      33%  { opacity: 0;   transform: scale(1); }
-      100% { opacity: 0;   transform: scale(1); }
+      0%          { opacity: 0;   transform: scale(1.08); }
+      <?= $fi ?>% { opacity: 1;   transform: scale(1.05); }
+      <?= $ve ?>% { opacity: 1;   transform: scale(1); }
+      <?= $hp ?>% { opacity: 0;   transform: scale(1); }
+      100%        { opacity: 0;   transform: scale(1); }
     }
 
     /* Dark overlay on each slide */
@@ -135,19 +152,15 @@ $slides = [
       z-index: 2;
       opacity: 0;
       transform: translateY(20px);
-      animation: textFade 18s infinite;
+      animation: textFade <?= $totalSec ?>s infinite;
     }
 
-    .slide:nth-child(1) .slide-content { animation-delay: 0s; }
-    .slide:nth-child(2) .slide-content { animation-delay: 6s; }
-    .slide:nth-child(3) .slide-content { animation-delay: 12s; }
-
     @keyframes textFade {
-      0%   { opacity: 0; transform: translateY(20px); }
-      8%   { opacity: 1; transform: translateY(0); }
-      28%  { opacity: 1; transform: translateY(0); }
-      33%  { opacity: 0; transform: translateY(-10px); }
-      100% { opacity: 0; transform: translateY(20px); }
+      0%           { opacity: 0; transform: translateY(20px); }
+      <?= $fi2 ?>% { opacity: 1; transform: translateY(0); }
+      <?= $ve ?>%  { opacity: 1; transform: translateY(0); }
+      <?= $hp ?>%  { opacity: 0; transform: translateY(-10px); }
+      100%         { opacity: 0; transform: translateY(20px); }
     }
 
     .slide-content h2 {
@@ -182,16 +195,12 @@ $slides = [
       animation: dotActive 18s infinite;
     }
 
-    .dot:nth-child(1) { animation-delay: 0s; }
-    .dot:nth-child(2) { animation-delay: 6s; }
-    .dot:nth-child(3) { animation-delay: 12s; }
-
     @keyframes dotActive {
-      0%   { background: rgba(255,255,255,.35); width: 8px; }
-      5%   { background: #00B4D8; width: 22px; border-radius: 4px; }
-      28%  { background: #00B4D8; width: 22px; border-radius: 4px; }
-      33%  { background: rgba(255,255,255,.35); width: 8px; border-radius: 50%; }
-      100% { background: rgba(255,255,255,.35); width: 8px; }
+      0%          { background: rgba(255,255,255,.35); width: 8px; }
+      <?= $fi ?>% { background: #00B4D8; width: 22px; border-radius: 4px; }
+      <?= $ve ?>% { background: #00B4D8; width: 22px; border-radius: 4px; }
+      <?= $hp ?>% { background: rgba(255,255,255,.35); width: 8px; border-radius: 50%; }
+      100%        { background: rgba(255,255,255,.35); width: 8px; }
     }
 
     /* Brand badge top-left */
@@ -244,7 +253,94 @@ $slides = [
       gap: .35rem;
     }
 
-    /* RIGHT — LOGIN FORM */
+    /* Stat cards */
+    .slide-stats {
+      position: absolute;
+      top: 50%;
+      right: 2.5rem;
+      transform: translateY(-50%);
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      gap: .75rem;
+    }
+
+    .stat-card {
+      background: rgba(255,255,255,.1);
+      backdrop-filter: blur(14px);
+      border: 1px solid rgba(255,255,255,.2);
+      border-radius: 14px;
+      padding: .85rem 1.1rem;
+      display: flex;
+      align-items: center;
+      gap: .75rem;
+      min-width: 160px;
+      animation: floatIn .6s ease both;
+    }
+
+    .stat-card:nth-child(1) { animation-delay: .2s; }
+    .stat-card:nth-child(2) { animation-delay: .4s; }
+    .stat-card:nth-child(3) { animation-delay: .6s; }
+    .stat-card:nth-child(4) { animation-delay: .8s; }
+
+    @keyframes floatIn {
+      from { opacity: 0; transform: translateX(20px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+
+    .stat-icon {
+      width: 36px; height: 36px;
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: .95rem;
+      flex-shrink: 0;
+    }
+
+    .stat-info { line-height: 1.2; }
+
+    .stat-value {
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: #fff;
+    }
+
+    .stat-label {
+      font-size: .7rem;
+      color: rgba(255,255,255,.65);
+      text-transform: uppercase;
+      letter-spacing: .04em;
+    }
+
+    /* Error toast on left panel */
+    .left-toast {
+      position: absolute;
+      top: 1.5rem;
+      right: 1.5rem;
+      z-index: 20;
+      background: rgba(220,38,38,.92);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255,255,255,.2);
+      border-radius: 12px;
+      padding: .75rem 1rem;
+      display: flex;
+      align-items: center;
+      gap: .6rem;
+      color: #fff;
+      font-size: .84rem;
+      font-weight: 600;
+      max-width: 280px;
+      box-shadow: 0 8px 28px rgba(0,0,0,.25);
+      animation: toastSlide .45s cubic-bezier(.34,1.56,.64,1) both;
+    }
+
+    @keyframes toastSlide {
+      from { opacity: 0; transform: translateY(-16px) scale(.95); }
+      to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .left-toast i { font-size: 1.1rem; flex-shrink: 0; }
+
+    /* RIGHT, LOGIN FORM */
     .login-right {
       width: 460px;
       min-height: 100vh;
@@ -377,20 +473,10 @@ $slides = [
     }
     .toggle-pw:hover { color: #0077B6; }
 
-    /* Error */
-    .login-error {
-      background: #fff5f5;
-      border: 1px solid #feb2b2;
-      border-radius: 10px;
-      padding: .75rem 1rem;
-      display: flex;
-      align-items: center;
-      gap: .5rem;
-      color: #c53030;
-      font-size: .875rem;
-      margin-bottom: 1.25rem;
-      animation: shake .4s ease;
-    }
+    /* Shake form on error */
+    <?php if ($error): ?>
+    .login-box form { animation: shake .45s ease; }
+    <?php endif; ?>
 
     @keyframes shake {
       0%,100% { transform: translateX(0); }
@@ -456,27 +542,83 @@ $slides = [
 </head>
 <body>
 
-  <!-- LEFT — Animated Slider -->
+  <!-- LEFT, Animated Slider -->
   <div class="login-left">
 
     <!-- Brand badge -->
     <div class="slide-brand">
-      <div class="slide-brand-icon"><i class="bi bi-compass"></i></div>
-      <div class="slide-brand-text">Nayagara Tours</div>
+      <?php if ($hasLogo): ?>
+        <div class="slide-brand-icon" style="overflow:hidden;padding:4px;">
+          <img src="<?= htmlspecialchars($logoUrl) ?>" alt="Nayagara Tours"
+               style="height:26px;max-width:26px;object-fit:contain;display:block;">
+        </div>
+      <?php else: ?>
+        <div class="slide-brand-icon"><i class="bi bi-compass"></i></div>
+      <?php endif; ?>
+      <div class="slide-brand-text" style="color:#00B4D8;">Nayagara Tours</div>
+    </div>
+
+    <!-- Error toast on the image side -->
+    <?php if ($error): ?>
+    <div class="left-toast">
+      <i class="bi bi-exclamation-circle-fill"></i>
+      <?= htmlspecialchars($error) ?>
+    </div>
+    <?php endif; ?>
+
+    <!-- Dashboard stat cards -->
+    <div class="slide-stats">
+      <div class="stat-card">
+        <div class="stat-icon" style="background:rgba(0,180,216,.25);">
+          <i class="bi bi-suitcase-lg" style="color:#00B4D8;"></i>
+        </div>
+        <div class="stat-info">
+          <div class="stat-value">Packages</div>
+          <div class="stat-label">Manage Tours</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon" style="background:rgba(16,185,129,.25);">
+          <i class="bi bi-calendar-check" style="color:#10b981;"></i>
+        </div>
+        <div class="stat-info">
+          <div class="stat-value">Bookings</div>
+          <div class="stat-label">Track Requests</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon" style="background:rgba(251,191,36,.25);">
+          <i class="bi bi-star-fill" style="color:#fbbf24;"></i>
+        </div>
+        <div class="stat-info">
+          <div class="stat-value">Reviews</div>
+          <div class="stat-label">Guest Feedback</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon" style="background:rgba(167,139,250,.25);">
+          <i class="bi bi-images" style="color:#a78bfa;"></i>
+        </div>
+        <div class="stat-info">
+          <div class="stat-value">Gallery</div>
+          <div class="stat-label">Media Library</div>
+        </div>
+      </div>
     </div>
 
     <!-- Feature pills -->
     <div class="slide-features">
-      <div class="feature-pill"><i class="bi bi-suitcase-lg"></i> Packages</div>
-      <div class="feature-pill"><i class="bi bi-calendar-check"></i> Bookings</div>
-      <div class="feature-pill"><i class="bi bi-images"></i> Gallery</div>
-      <div class="feature-pill"><i class="bi bi-star"></i> Reviews</div>
+      <div class="feature-pill"><i class="bi bi-shield-check"></i> Secure Login</div>
+      <div class="feature-pill"><i class="bi bi-globe"></i> Sri Lanka Travel</div>
+      <div class="feature-pill"><i class="bi bi-gear"></i> Full Control</div>
     </div>
 
     <!-- Slides -->
-    <?php foreach ($slides as $slide): ?>
-      <div class="slide" style="background-image:url('<?= $slide['image'] ?>')">
-        <div class="slide-content">
+    <?php foreach ($slides as $i => $slide):
+      $delay = ($i * $slotSec) . 's';
+    ?>
+      <div class="slide" style="background-image:url('<?= $slide['image'] ?>');animation-delay:<?= $delay ?>;">
+        <div class="slide-content" style="animation-delay:<?= $delay ?>;">
           <h2><?= $slide['heading'] ?></h2>
           <p><?= $slide['subtext'] ?></p>
         </div>
@@ -485,14 +627,14 @@ $slides = [
 
     <!-- Dots -->
     <div class="slide-dots">
-      <?php foreach ($slides as $_): ?>
-        <div class="dot"></div>
+      <?php foreach ($slides as $i => $_): ?>
+        <div class="dot" style="animation-delay:<?= ($i * $slotSec) ?>s;animation-duration:<?= $totalSec ?>s;"></div>
       <?php endforeach; ?>
     </div>
 
   </div>
 
-  <!-- RIGHT — Login Form -->
+  <!-- RIGHT, Login Form -->
   <div class="login-right">
     <div class="login-box">
 
@@ -512,12 +654,6 @@ $slides = [
       <h1 class="login-heading">Welcome back</h1>
       <p class="login-sub">Sign in to your admin account</p>
 
-      <?php if ($error): ?>
-        <div class="login-error">
-          <i class="bi bi-exclamation-circle-fill"></i>
-          <?= htmlspecialchars($error) ?>
-        </div>
-      <?php endif; ?>
 
       <form method="POST" action="">
 

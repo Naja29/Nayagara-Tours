@@ -1,6 +1,4 @@
-.gallery-section { }
-
-/* ── Grid ── */
+/* Grid */
 .gallery-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -13,7 +11,7 @@
     grid-row: span 2;
 }
 
-/* ── Item ── */
+/* Item  */
 .gallery-item {
     position: relative;
     overflow: hidden;
@@ -34,7 +32,7 @@
     min-height: 416px; /* 2 × 200px + 1 × gap */
 }
 
-/* ── Hover Overlay ── */
+/*  Hover Overlay */
 .gallery-overlay {
     position: absolute;
     inset: 0;
@@ -82,7 +80,7 @@
     transform: scale(1);
 }
 
-/* ── Lightbox ── */
+/* Lightbox */
 .gallery-lightbox {
     position: fixed;
     inset: 0;

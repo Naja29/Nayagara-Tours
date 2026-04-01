@@ -1,5 +1,5 @@
 <?php
-// Protect every admin page — include this at the top of each admin file
+// Protect every admin page, include this at the top of each admin file
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }

@@ -1,10 +1,8 @@
-.packages-section { }
-
 .packages-swiper {
     padding: 10px 0 58px !important;
 }
 
-/* ── Equal-height slides ── */
+/* Equal-height slides */
 .packages-swiper .swiper-wrapper {
     align-items: stretch;
 }
@@ -13,7 +11,7 @@
     height: auto;
 }
 
-/* ── Card ── */
+/* Card */
 .package-card {
     background: var(--white);
     border-radius: var(--radius-lg);
@@ -32,7 +30,7 @@
     border-color: rgba(0,119,182,0.15);
 }
 
-/* ── Image ── */
+/* Image */
 .package-image {
     position: relative;
     overflow: hidden;
@@ -59,7 +57,7 @@
     pointer-events: none;
 }
 
-/* ── Badge ── */
+/* Badge */
 .package-badge {
     position: absolute;
     top: 14px;
@@ -76,7 +74,7 @@
     box-shadow: 0 3px 10px rgba(0,0,0,0.2);
 }
 
-/* ── Price ── */
+/* Price */
 .package-price {
     position: absolute;
     bottom: 14px;
@@ -92,7 +90,7 @@
     letter-spacing: 0.3px;
 }
 
-/* ── Body ── */
+/* Body */
 .package-body {
     padding: 24px 24px 26px;
     flex: 1;
@@ -148,7 +146,7 @@
     flex: 1;
 }
 
-/* ── Highlights ── */
+/*  Highlights */
 .package-highlights {
     display: flex;
     gap: 8px;
@@ -174,7 +172,7 @@
     font-size: 0.65rem;
 }
 
-/* ── Slider Nav Arrows (siblings of swiper, inside .swiper-outer) ── */
+/* Slider Nav Arrows (siblings of swiper, inside .swiper-outer)  */
 .packages-prev,
 .packages-next {
     width: 44px;
